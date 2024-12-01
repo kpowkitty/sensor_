@@ -1,0 +1,36 @@
+{
+    "name": "sensor_",
+    "description": "",
+    "dependencies": {
+        "core": "*",
+        "radio": "*",
+        "microphone": "*",
+        "datalogger": "*"
+    },
+    "files": [
+        "main.blocks",
+        "main.ts",
+        "README.md",
+        "check_temp.ts",
+        "send_temp.ts",
+        "send_light.ts",
+        "send_data.ts",
+        "stringToBuffer.ts",
+        "concatenateBuffers.ts",
+        "compareBuffers.ts",
+        "check_light.ts",
+        "none.ts",
+        "sendBuffer.ts"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "7.0.51",
+        "targetId": "microbit"
+    },
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}
