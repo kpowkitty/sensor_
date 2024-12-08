@@ -2,11 +2,14 @@ radio.onReceivedString(function (receivedString) {
     basic.showString(receivedString)
     message = sensor.stringToBuffer(receivedString)
 })
+sensor.receiveABuffer(function (message) {
+	
+})
 let full = false
 let currentLightLevel = 0
 let currentTempLevel = 0
 let message: Buffer = null
-let startReceived: boolean = false
+let startReceived = false
 radio.setGroup(23)
 radio.setTransmitPower(7)
 let _empty = sensor.stringToBuffer("empty")
@@ -18,7 +21,7 @@ while (true) {
     if (!(startReceived)) {
         basic.showString("W")
         if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
-            start_received = true
+            startReceived = true
         } else {
             continue;
         }
@@ -29,7 +32,7 @@ while (true) {
     currentLightLevel = input.lightLevel()
     if (currentTempLevel != sensor.none() && currentLightLevel != sensor.none()) {
         radio.sendBuffer(ready)
-        basic.showString("R")
+basic.showString("R")
     }
     control.waitMicros(1000000)
     while (true) {
@@ -43,15 +46,8 @@ while (true) {
         }
     }
     if (message && message == _ack) {
-        sensor.sendData(currentTempLevel, currentLightLevel)
-        basic.showString("S")
-        control.waitMicros(10000000)
+    	
     } else if (message && sensor.compareBuffers(message, _full)) {
-        while (full) {
-            basic.showString("F")
-            if (message && sensor.compareBuffers(message, _empty)) {
-                full = false
-            }
-        }
+    	
     }
 }

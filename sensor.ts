@@ -6,7 +6,9 @@ namespace sensor {
 
     //% block
     export function receiveABuffer(handler: (message: Buffer) => void): void {
-        radio.onReceivedBuffer(handler);
+        radio.onReceivedBuffer(function (receivedBuffer) {
+            handler(receivedBuffer);
+        });
     }
 
     //% block
@@ -15,23 +17,23 @@ namespace sensor {
     }
 
     //% block
-    export function send_light(light: number): void {
+    export function sendLight(light: number): void {
         let byteMessage: Buffer = Buffer.fromUTF8("light")
         byteMessage = Buffer.concat([byteMessage, Buffer.fromUTF8(light.toString())])
         radio.sendBuffer(byteMessage)
     }
 
     //% block
-    export function send_temp(temp: number): void {
+    export function sendTemp(temp: number): void {
         let byteMessage: Buffer = Buffer.fromUTF8("temp ")
         byteMessage = Buffer.concat([byteMessage, Buffer.fromUTF8(temp.toString())])
         radio.sendBuffer(byteMessage)
     }
 
     //% block
-    export function send_data(temp: number, light: number): void {
-        send_temp(temp)
-        send_light(light)
+    export function sendData(temp: number, light: number): void {
+        sendTemp(temp)
+        sendLight(light)
     }
 
     //% block
