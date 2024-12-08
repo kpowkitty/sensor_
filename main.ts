@@ -6,7 +6,7 @@ let full = false
 let currentLightLevel = 0
 let currentTempLevel = 0
 let message: Buffer = null
-let start_received = false
+let startReceived: boolean = false
 radio.setGroup(23)
 radio.setTransmitPower(7)
 let _empty = sensor.stringToBuffer("empty")
@@ -15,7 +15,7 @@ let _ack = sensor.stringToBuffer("ack")
 let _start = sensor.stringToBuffer("start")
 let ready = sensor.stringToBuffer("ready")
 while (true) {
-    if (!(start_received)) {
+    if (!(startReceived)) {
         basic.showString("W")
         if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
             start_received = true
@@ -28,28 +28,28 @@ while (true) {
     currentTempLevel = currentTempLevel * 1.8 + 32
     currentLightLevel = input.lightLevel()
     if (currentTempLevel != sensor.none() && currentLightLevel != sensor.none()) {
-        radio.sendString("" + (ready))
+        radio.sendBuffer(ready)
         basic.showString("R")
     }
     control.waitMicros(1000000)
     while (true) {
-        if (message && message == _ack) {
+        if (message && sensor.compareBuffers(message, _ack)) {
             basic.showString("A")
             break;
         }
-        if (message && message == _full) {
+        if (message && sensor.compareBuffers(message, _full)) {
             full = true
             break;
         }
     }
     if (message && message == _ack) {
-        sensor.send_data(currentTempLevel, currentLightLevel)
+        sensor.sendData(currentTempLevel, currentLightLevel)
         basic.showString("S")
         control.waitMicros(10000000)
-    } else if (message && message == _full) {
+    } else if (message && sensor.compareBuffers(message, _full)) {
         while (full) {
             basic.showString("F")
-            if (message && message == _empty) {
+            if (message && sensor.compareBuffers(message, _empty)) {
                 full = false
             }
         }
