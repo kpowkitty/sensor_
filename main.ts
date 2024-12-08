@@ -1,55 +1,55 @@
 radio.onReceivedString(function (receivedString) {
+    basic.showString(receivedString)
     message = sensor.stringToBuffer(receivedString)
 })
 let full = false
-let light2 = 0
-let temp = 0
-let start_received = false
+let currentLightLevel = 0
+let currentTempLevel = 0
 let message: Buffer = null
+let start_received = false
 radio.setGroup(23)
 radio.setTransmitPower(7)
-let ready = sensor.stringToBuffer("ready")
-message = sensor.none()
-let _ack = sensor.stringToBuffer("ack")
-let _full = sensor.stringToBuffer("full")
 let _empty = sensor.stringToBuffer("empty")
+let _full = sensor.stringToBuffer("full")
+let _ack = sensor.stringToBuffer("ack")
 let _start = sensor.stringToBuffer("start")
+let ready = sensor.stringToBuffer("ready")
 while (true) {
     if (!(start_received)) {
-        if (message && sensor.compareBuffers(message, _start)) {
+        basic.showString("W")
+        if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
             start_received = true
+        } else {
+            continue;
         }
-    } else {
-        continue;
     }
-    sensor.check_temp()
-    sensor.check_light()
-    temp = input.temperature()
-    light2 = input.lightLevel()
-    if (("temp" as any) != ("none" as any) && ("light" as any) != ("none" as any)) {
-        sensor.sendBuffer(ready)
+    basic.showString("SR")
+    currentTempLevel = input.temperature()
+    currentTempLevel = currentTempLevel * 1.8 + 32
+    currentLightLevel = input.lightLevel()
+    if (currentTempLevel != sensor.none() && currentLightLevel != sensor.none()) {
+        radio.sendString("" + (ready))
         basic.showString("R")
     }
     control.waitMicros(1000000)
     while (true) {
-        if (message && sensor.compareBuffers(message, _ack)) {
-            basic.showString("M")
+        if (message && message == _ack) {
+            basic.showString("A")
             break;
         }
-        if (message && sensor.compareBuffers(message, _full)) {
+        if (message && message == _full) {
             full = true
             break;
         }
     }
-    if (message && sensor.compareBuffers(message, _ack)) {
-        radio.sendValue("temp", temp)
-        radio.sendValue("light", light2)
+    if (message && message == _ack) {
+        sensor.send_data(currentTempLevel, currentLightLevel)
         basic.showString("S")
         control.waitMicros(10000000)
-    } else if (message && sensor.compareBuffers(message, _full)) {
+    } else if (message && message == _full) {
         while (full) {
             basic.showString("F")
-            if (message && sensor.compareBuffers(message, _empty)) {
+            if (message && message == _empty) {
                 full = false
             }
         }

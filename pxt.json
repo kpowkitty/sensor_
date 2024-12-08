@@ -11,16 +11,7 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "check_temp.ts",
-        "send_temp.ts",
-        "send_light.ts",
-        "send_data.ts",
-        "stringToBuffer.ts",
-        "concatenateBuffers.ts",
-        "compareBuffers.ts",
-        "check_light.ts",
-        "none.ts",
-        "sendBuffer.ts"
+        "sensor.ts"
     ],
     "testFiles": [
         "test.ts"
