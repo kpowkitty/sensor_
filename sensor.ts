@@ -18,16 +18,16 @@ namespace sensor {
 
     //% block
     export function sendLight(light: number): void {
-        let byteMessage: Buffer = Buffer.fromUTF8("light")
-        byteMessage = Buffer.concat([byteMessage, Buffer.fromUTF8(light.toString())])
-        radio.sendBuffer(byteMessage)
+        let encoded_light = "light" + light.toString();
+        let buffer_light: Buffer = sensor.stringToBuffer(encoded_light)
+        radio.sendBuffer(buffer_light)
     }
 
     //% block
     export function sendTemp(temp: number): void {
-        let byteMessage: Buffer = Buffer.fromUTF8("temp ")
-        byteMessage = Buffer.concat([byteMessage, Buffer.fromUTF8(temp.toString())])
-        radio.sendBuffer(byteMessage)
+        let encoded_temp = "temp " + temp.toString();
+        let buffer_temp: Buffer = sensor.stringToBuffer(encoded_temp)
+        radio.sendBuffer(buffer_temp)
     }
 
     //% block
