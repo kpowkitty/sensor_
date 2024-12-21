@@ -5,10 +5,25 @@ namespace sensor {
     }
 
     //% block
+    export function bufferToString(buffer: Buffer): string {
+        let str: string
+        for (let i = 0; i < buffer.length; i++) {
+            str += buffer[i]
+        }
+        return str
+    }
+
+    //% block
     export function receiveABuffer(handler: (message: Buffer) => void): void {
         radio.onReceivedBuffer(function (receivedBuffer) {
             handler(receivedBuffer);
         });
+    }
+
+    //% block
+    export function receiveBytes(): Buffer | null {
+        let buffer: Buffer = radio.readRawPacket();
+        return buffer ? buffer.slice(0, buffer.length - 4) : null;
     }
 
     //% block
