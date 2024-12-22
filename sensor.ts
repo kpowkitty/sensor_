@@ -6,8 +6,13 @@ namespace sensor {
 
     //% block
     export function bufferToString(buffer: Buffer): string {
+        if (buffer.length == 0) {
+            return null
+        }
+
         let str: string
-        for (let i = 0; i < buffer.length; i++) {
+        
+        for (let i = 9; i < buffer.length; i++) {
             str += buffer[i]
         }
         return str

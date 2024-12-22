@@ -1,3 +1,6 @@
+radio.onReceivedBuffer(function (receivedBuffer) {
+    message = receivedBuffer
+})
 let full: Boolean
 let currentLightLevel
 let currentTempLevel
@@ -31,9 +34,7 @@ message = null
 while (started) {
         if (!(startReceived)) {
             basic.showString("W")
-            message = sensor.receiveBytes()
-            test = sensor.bufferToString(sensor.receiveBytes())
-            basic.showString(test)
+            basic.pause(100)
             if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
                 startReceived = true
             } else {
@@ -50,6 +51,7 @@ while (started) {
         }
         while (awaitingAcknowledgement) {
             basic.showString("WA")
+            basic.pause(100)
             if (message != sensor.none() && sensor.compareBuffers(message, _ack)) {
                 basic.showString("A")
                 awaitingAcknowledgement = false
@@ -67,7 +69,7 @@ while (started) {
                 basic.showString("SD")
                 sendingData = false
                 awaitingAcknowledgement = true
-                control.waitMicros(10000000)
+                basic.pause(10000)
             } else if (message != sensor.none() && sensor.compareBuffers(message, _full)) {
                 while (full) {
                     basic.showString("F")
