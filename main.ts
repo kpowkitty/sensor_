@@ -1,86 +1,74 @@
 radio.onReceivedBuffer(function (receivedBuffer) {
     message = receivedBuffer
 })
-let full: Boolean
-let currentLightLevel
-let currentTempLevel
-let startReceived: Boolean
-let sendingData: Boolean
-let awaitingAcknowledgement: Boolean
-let ready: Buffer
-let _start: Buffer
-let _ack: Buffer
-let _full: Buffer
-let _empty: Buffer
-let message: Buffer
-let started: Boolean
-let test: string
+let full = false
+let startReceived = false
+let awaitingAcknowledgement = false
+let sendingData = false
+let message: Buffer = null
 radio.setGroup(23)
 radio.setTransmitPower(7)
-basic.forever(function () {
-    _empty = sensor.stringToBuffer("empty")
-    _full = sensor.stringToBuffer("full")
-    _ack = sensor.stringToBuffer("ack")
-    _start = sensor.stringToBuffer("start")
-    ready = sensor.stringToBuffer("ready")
-    awaitingAcknowledgement = true
+let _ready = sensor.stringToBuffer("ready")
+let _start = sensor.stringToBuffer("start")
+let _ack = sensor.stringToBuffer("ack")
+let _full = sensor.stringToBuffer("full")
+let _empty = sensor.stringToBuffer("empty")
+let currentLightLevel: number = sensor.none()
+let currentTempLevel: number = sensor.none()
+message = sensor.none()
+let _req = sensor.stringToBuffer("request")
+let requesting = true
+while (true) {
     sendingData = true
-    started = true
-    startReceived = false
-    full = false
-    currentLightLevel = null
-currentTempLevel = null
-message = null
-while (started) {
-        if (!(startReceived)) {
-            basic.showString("W")
-            basic.pause(100)
-            if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
-                startReceived = true
-            } else {
-                continue;
-            }
+    awaitingAcknowledgement = true
+    requesting = true
+    if (!(startReceived)) {
+        basic.showString("W")
+        basic.pause(100)
+        if (message != sensor.none() && sensor.compareBuffers(message, _start)) {
+            startReceived = true
+            basic.showString("S")
+        } else {
+            continue;
         }
-        basic.showString("SR")
-        currentTempLevel = input.temperature()
-        currentTempLevel = currentTempLevel * 1.8 + 32
-        currentLightLevel = input.lightLevel()
-        if (currentTempLevel != sensor.none() && currentLightLevel != sensor.none()) {
-            sensor.sendBuffer(ready)
-            basic.showString("R")
+    }
+    currentTempLevel = input.temperature()
+    currentTempLevel = currentTempLevel * 1.8 + 32
+    currentLightLevel = input.lightLevel()
+    if (currentTempLevel != sensor.none() && currentLightLevel != sensor.none()) {
+        sensor.sendBuffer(_ready)
+        basic.showString("R")
+    }
+    while (awaitingAcknowledgement) {
+        basic.pause(100)
+        if (message != sensor.none() && sensor.compareBuffers(message, _ack)) {
+            basic.showString("A")
+            awaitingAcknowledgement = false
         }
-        while (awaitingAcknowledgement) {
-            basic.showString("WA")
-            basic.pause(100)
-            if (message != sensor.none() && sensor.compareBuffers(message, _ack)) {
-                basic.showString("A")
-                awaitingAcknowledgement = false
-            }
-            if (message != sensor.none() && sensor.compareBuffers(message, _full)) {
+        if (message != sensor.none() && sensor.compareBuffers(message, _full)) {
+            basic.showString("F")
+            full = true
+            awaitingAcknowledgement = false
+        }
+    }
+    while (sendingData) {
+        if (message != sensor.none() && sensor.compareBuffers(message, _ack)) {
+            sensor.sendData(currentTempLevel, currentLightLevel)
+            basic.showString("D")
+            sendingData = false
+        } else if (message != sensor.none() && sensor.compareBuffers(message, _full)) {
+            while (full) {
                 basic.showString("F")
-                full = true
-                awaitingAcknowledgement = false
-            }
-        }
-        while (sendingData) {
-            basic.showString("WTS")
-            if (message != sensor.none() && sensor.compareBuffers(message, _ack)) {
-                sensor.sendData(currentTempLevel, currentLightLevel)
-                basic.showString("SD")
-                sendingData = false
-                awaitingAcknowledgement = true
-                basic.pause(10000)
-            } else if (message != sensor.none() && sensor.compareBuffers(message, _full)) {
-                while (full) {
-                    basic.showString("F")
-                    if (message != sensor.none() && sensor.compareBuffers(message, _empty)) {
-                        startReceived = false
-                        full = false
-                        sendingData = false
-                    }
+                if (message != sensor.none() && sensor.compareBuffers(message, _empty)) {
+                    startReceived = false
+                    full = false
+                    sendingData = false
                 }
             }
         }
-        started = false
     }
-})
+    currentLightLevel = sensor.none()
+    currentTempLevel = sensor.none()
+    message = sensor.none()
+    control.waitMicros(5000000)
+}
