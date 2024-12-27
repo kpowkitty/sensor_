@@ -8,7 +8,7 @@ let startReceived = false
 let awaitingAcknowledgement = false
 let sendingData = false
 let message: Buffer = null
-let watchdogLimit = 10000
+let watchdogLimit = 600000
 let lastActionTime = input.runningTime()
 let _request = sensor.stringToBuffer("request")
 radio.setGroup(23)
@@ -104,5 +104,5 @@ while (true) {
     currentTempLevel = sensor.none()
     message = sensor.none()
     lastActionTime = input.runningTime()
-    control.waitMicros(5000000)
+    control.waitMicros(4800000000)
 }
