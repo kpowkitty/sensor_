@@ -92,10 +92,7 @@ while (true) {
             while (full) {
                 basic.showString("F")
                 if (message != sensor.none() && sensor.compareBuffers(message, _empty)) {
-                    startReceived = false
-                    full = false
-                    sendingData = false
-                    lastActionTime = input.runningTime()
+                    control.reset()
                 }
             }
         }
