@@ -11,7 +11,8 @@
         "main.blocks",
         "main.ts",
         "README.md",
-        "sensor.ts"
+        "sensor.ts",
+        "sensorAbstracted.ts"
     ],
     "testFiles": [
         "test.ts"
