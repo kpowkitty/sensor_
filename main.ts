@@ -1,51 +1,22 @@
-let awaitingAcknowledgement = false
-let sendingData = false
-let watchdogLimit = 600000
+radio.onReceivedBuffer(function (receivedBuffer) {
+    message = receivedBuffer
+})
+let message: Buffer = null
+let currentTempLevel: number = sensor.none()
+let currentLightLevel: number = sensor.none()
 radio.setGroup(23)
 radio.setTransmitPower(7)
-let message = sensor.none()
-let requesting = true
 while (true) {
-    sendingData = true
-    awaitingAcknowledgement = true
-    requesting = true
-    if (sensorAbstracted.notStartedYet()) {
-        basic.showString("O")
-        basic.pause(100)
-        if (sensorAbstracted.wasStart(message)) {
-            sensorAbstracted.start()
-        } else {
-            continue;
-        }
+    if (!(sensorAbstracted.startedYet())) {
+        continue;
     }
-    sensorAbstracted.storeCurrentTemperatureReading()
-    sensorAbstracted.storeCurrentLightReading()
+    currentTempLevel = input.temperature()
+    currentTempLevel = currentTempLevel * 1.8 + 32
+    currentLightLevel = input.lightLevel()
     if (sensorAbstracted.dataIsStoredCorrectly()) {
         sensorAbstracted.sendReady()
     }
-    while (awaitingAcknowledgement) {
-        basic.showString("W")
-        basic.pause(100)
-        if (sensorAbstracted.wasRequest(message)) {
-            sensorAbstracted.sendReady()
-        }
-        if (sensorAbstracted.wasAcknowledgement(message)) {
-            sensorAbstracted.acknowledgementReceived()
-        } else if (sensorAbstracted.wasFull(message)) {
-            sensorAbstracted.fullReceived()
-        }
-        while (sensorAbstracted.timingOut()) {
-            sensorAbstracted.requestRescue()
-        }
-    }
-    while (sendingData) {
-        basic.showString("D")
-        basic.pause(100)
-        if (sensorAbstracted.wasAcknowledgement(message)) {
-            sensorAbstracted.sendData()
-        } else if (sensorAbstracted.wasFull(message)) {
-            sensorAbstracted.waitForEmpty()
-        }
-    }
+    sensorAbstracted.waitForAcknowledgement()
+    sensorAbstracted.sendingData(currentTempLevel, currentLightLevel)
     sensorAbstracted.resetVariables()
 }
