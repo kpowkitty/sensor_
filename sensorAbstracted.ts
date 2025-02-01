@@ -112,7 +112,7 @@ namespace sensorAbstracted {
         currentTempLevel = sensor.none()
         message = sensor.none()
         lastActionTime = input.runningTime()
-        control.waitMicros(3000000000)
+        wait60Minutes()
         if (timingOut()) {
             log("Reset timeout")
         }
@@ -191,6 +191,15 @@ namespace sensorAbstracted {
             while (timingOut()) {
                 requestRescue()
             }
+        }
+    }
+
+    // control.waitMicros() only has a gaurantee to wait up to a certain amount because
+    // it only has 32 bits, need to break it up into smaller chunks
+    //% block
+    export function wait60Minutes() {
+        for (let i = 0; i < 5; i++) {
+            control.waitMicros(600000000) // 10 minutes per iteration
         }
     }
 
