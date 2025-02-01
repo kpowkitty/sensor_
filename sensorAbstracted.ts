@@ -9,21 +9,16 @@ let _empty = sensor.stringToBuffer("empty")
 let lastActionTime: number = input.runningTime()
 let _request = sensor.stringToBuffer("request")
 let awaitingAcknowledgement: Boolean = true
-let watchdogLimit = 600000
+let watchdogLimit = 3600000
 namespace sensorAbstracted {
     //% block
     export function sendData() {
         sensor.sendData(currentTempLevel, currentLightLevel)
-        basic.showString("D")
-        logMessage = "Successfully sent data"
-        datalogger.log(datalogger.createCV("Message", logMessage))
         lastActionTime = input.runningTime()
     }
 
     //% block
     export function requestRescue() {
-        let error = "Timeout"
-        datalogger.log(datalogger.createCV("Error", error))
         basic.showString("E")
         sensor.sendBuffer(_request)
         basic.pause(100)
@@ -40,8 +35,6 @@ namespace sensorAbstracted {
     //% block
     export function acknowledgementReceived() {
         basic.showString("A")
-        logMessage = "Received acknowledgement"
-        datalogger.log(datalogger.createCV("Message", logMessage))
         awaitingAcknowledgement = false
         lastActionTime = input.runningTime()
     }
@@ -69,8 +62,7 @@ namespace sensorAbstracted {
     export function sendReady() {
         sensor.sendBuffer(_ready)
         basic.showString("R")
-        logMessage = "Ready sent"
-        datalogger.log(datalogger.createCV("Message", logMessage))
+        basic.clearScreen()
         lastActionTime = input.runningTime()
     }
 
@@ -78,25 +70,22 @@ namespace sensorAbstracted {
     export function start() {
         startReceived = true
         basic.showString("S")
-        logMessage = "Start received"
-        datalogger.log(datalogger.createCV("Message", logMessage))
+        basic.clearScreen()
         lastActionTime = input.runningTime()
-    }
-
-    //% block
-    export function notStartedYet(): Boolean {
-        if (!startReceived) {
-            return true
-        }
-        return false
     }
 
     //% block
     export function startedYet(): Boolean {
         while (!startReceived) {
             basic.pause(100)
-            if (sensorAbstracted.wasStart(message)) {
-                sensorAbstracted.start()
+            if (wasStart(message)) {
+                start()
+            }
+            if (timingOut()) {
+                log("Start timeout")
+            }
+            while (timingOut()) {
+                requestRescue()
             }
         }
         if (startReceived) {
@@ -123,7 +112,13 @@ namespace sensorAbstracted {
         currentTempLevel = sensor.none()
         message = sensor.none()
         lastActionTime = input.runningTime()
-        control.waitMicros(4800000000)
+        control.waitMicros(3000000000)
+        if (timingOut()) {
+            log("Reset timeout")
+        }
+        while (timingOut()) {
+            requestRescue()
+        }
     }
 
     //% block
@@ -158,19 +153,20 @@ namespace sensorAbstracted {
 
     //% block
     export function waitForAcknowledgement() {
+        basic.showString("W")
+        basic.clearScreen()
         while (awaitingAcknowledgement) {
-            basic.showString("W")
             basic.pause(100)
-            if (sensorAbstracted.wasRequest(message)) {
-                sensorAbstracted.sendReady()
+            if (wasRequest(message)) {
+                sendReady()
             }
-            if (sensorAbstracted.wasAcknowledgement(message)) {
-                sensorAbstracted.acknowledgementReceived()
-            } else if (sensorAbstracted.wasFull(message)) {
-                sensorAbstracted.fullReceived()
+            if (wasAcknowledgement(message)) {
+                acknowledgementReceived()
+            } else if (wasFull(message)) {
+                fullReceived()
             }
-            while (sensorAbstracted.timingOut()) {
-                sensorAbstracted.requestRescue()
+            while (timingOut()) {
+                requestRescue()
             }
         }
     }
@@ -178,16 +174,28 @@ namespace sensorAbstracted {
     //% block
     export function sendingData(temp: number, light: number) {
         let sending: Boolean = true
+        basic.showString("D")
+        basic.clearScreen()
         while (sending) {
-            basic.showString("D")
             basic.pause(100)
-            if (sensorAbstracted.wasAcknowledgement(message)) {
-                sensorAbstracted.sendData()
+            if (wasAcknowledgement(message)) {
+                sendData()
                 sending = false
             } else if (sensorAbstracted.wasFull(message)) {
-                sensorAbstracted.waitForEmpty()
+                waitForEmpty()
                 sending = false
             }
+            if (timingOut()) {
+                log("Ack timeout")
+            }
+            while (timingOut()) {
+                requestRescue()
+            }
         }
+    }
+
+    // Helper function for logging errors dynamically
+    export function log(error: string) {
+        datalogger.log(datalogger.createCV("Error", error))
     }
 }
