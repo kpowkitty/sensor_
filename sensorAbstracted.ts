@@ -9,7 +9,7 @@ let _empty = sensor.stringToBuffer("empty")
 let lastActionTime: number = input.runningTime()
 let _request = sensor.stringToBuffer("request")
 let awaitingAcknowledgement: Boolean = true
-let watchdogLimit = 3600000
+let watchdogLimit = 5400000
 namespace sensorAbstracted {
     //% block
     export function sendData() {
@@ -198,7 +198,7 @@ namespace sensorAbstracted {
     // it only has 32 bits, need to break it up into smaller chunks
     //% block
     export function wait60Minutes() {
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 6; i++) {
             control.waitMicros(600000000) // 10 minutes per iteration
         }
     }
