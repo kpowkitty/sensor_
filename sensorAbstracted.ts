@@ -194,13 +194,8 @@ namespace sensorAbstracted {
         }
     }
 
-    // control.waitMicros() only has a gaurantee to wait up to a certain amount because
-    // it only has 32 bits, need to break it up into smaller chunks
-    //% block
     export function wait60Minutes() {
-        for (let i = 0; i < 6; i++) {
-            control.waitMicros(600000000) // 10 minutes per iteration
-        }
+        basic.pause(3000000) // 50 minutes in milliseconds
     }
 
     // Helper function for logging errors dynamically
